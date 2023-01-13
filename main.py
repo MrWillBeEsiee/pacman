@@ -48,7 +48,7 @@ HAUTEUR = TBL.shape[1]
 LARGEUR = TBL.shape[0]
 
 score = 0
-
+LOOSE = 0
 
 # placements des pacgums et des fantomes
 
@@ -89,6 +89,8 @@ Ghosts.append([9, 5, "pink", Direction.HAUT])
 Ghosts.append([9, 5, "orange", Direction.HAUT])
 Ghosts.append([9, 5, "cyan", Direction.HAUT])
 Ghosts.append([9, 5, "red", Direction.HAUT])
+
+loose = 0
 
 ##############################################################################
 #
@@ -398,6 +400,11 @@ def IAPacman():
     if(GUM[PacManPos[0], PacManPos[1]] == 1):
         GUM[PacManPos[0], PacManPos[1]] = 0
         score += 100
+    for F in Ghosts:
+        if F[0] == PacManPos[0] and F[1] == PacManPos[1]:
+            global LOOSE
+            LOOSE = 1
+
 
 
 
@@ -415,6 +422,9 @@ def IAGhosts():
         F[0] += L[choix][0]
         F[1] += L[choix][1]
         F[3] = L[choix][2]
+        if F[0] == PacManPos[0] and F[1] == PacManPos[1]:
+            global LOOSE
+            LOOSE = 1
 
 
 
@@ -426,7 +436,7 @@ def PlayOneTurn():
     global score
     global iteration
 
-    if not PAUSE_FLAG:
+    if not PAUSE_FLAG and not LOOSE:
         iteration += 1
         if iteration % 2 == 0:
             IAPacman()
