@@ -48,13 +48,14 @@ score = 0
 def PlacementsGUM():  # placements des pacgums
     GUM = np.zeros(TBL.shape, dtype=np.int32)
 
-    for x in range(LARGEUR-5):
+    for x in range(LARGEUR):
         for y in range(HAUTEUR):
             if (TBL[x][y] == 0):
                 GUM[x][y] = 1
     return GUM
-
 GUM = PlacementsGUM()
+
+
 
 
 def DistanceCarteInit():
@@ -294,6 +295,7 @@ AfficherPage(0)
 #########################################################################
 def PointsATraiterInit():
     #Initilsation de la liste des
+
     L = []
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
@@ -303,10 +305,10 @@ def PointsATraiterInit():
 
 def Carte():
     points = PointsATraiterInit()
-    print(points)
+    CarteDistanceGum = DistanceCarteInit()
     L = []
     for k in range(10):
-
+        print(points)
         for i in points:
             x = i[0]
             y = i[1]
@@ -324,8 +326,10 @@ def Carte():
                 L.append((x,y-1))
 
         points.clear()
-        points = L.copy()
+        points = [i for i in L]
         L.clear()
+    return CarteDistanceGum
+
 
 def PacManPossibleMove():
     L = []
@@ -347,6 +351,7 @@ def GhostsPossibleMove(x, y):
 
 
 def IAPacman():
+    CarteDistanceGum = Carte()
     global PacManPos, Ghosts, score
     # deplacement Pacman
     L = PacManPossibleMove()
@@ -356,7 +361,7 @@ def IAPacman():
     if(GUM[PacManPos[0], PacManPos[1]] == 1):
         GUM[PacManPos[0], PacManPos[1]] = 0
         score += 100
-        Carte()
+
 
 
     # juste pour montrer comment on se sert de la fonction SetInfo1
