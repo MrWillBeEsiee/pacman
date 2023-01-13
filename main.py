@@ -2,6 +2,13 @@ import random
 import tkinter as tk
 from tkinter import font as tkfont
 import numpy as np
+from enum import Enum, auto
+
+class Direction(Enum):
+    HAUT = auto()
+    BAS = auto()
+    DROITE = auto()
+    GAUCHE = auto()
 
 
 ##########################################################################
@@ -28,7 +35,7 @@ TBL = CreateArray([
     [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
     [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 1, 0, 1, 1, 2, 2, 1, 1, 0, 1, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -75,11 +82,13 @@ CarteDistanceGum = DistanceCarteInit()
 
 PacManPos = [5, 5]
 
+
+
 Ghosts = []
-Ghosts.append([LARGEUR // 2, HAUTEUR // 2, "pink"])
-Ghosts.append([LARGEUR // 2, HAUTEUR // 2, "orange"])
-Ghosts.append([LARGEUR // 2, HAUTEUR // 2, "cyan"])
-Ghosts.append([LARGEUR // 2, HAUTEUR // 2, "red"])
+Ghosts.append([9, 5, "pink", Direction.HAUT])
+Ghosts.append([9, 5, "orange", Direction.HAUT])
+Ghosts.append([9, 5, "cyan", Direction.HAUT])
+Ghosts.append([9, 5, "red", Direction.HAUT])
 
 ##############################################################################
 #
@@ -344,12 +353,37 @@ def PacManPossibleMove():
     return L
 
 
-def GhostsPossibleMove(x, y):
+def CornerGetPossibility(F):
     L = []
-    if (TBL[x][y - 1] == 2): L.append((0, -1))
-    if (TBL[x][y + 1] == 2): L.append((0, 1))
-    if (TBL[x + 1][y] == 2): L.append((1, 0))
-    if (TBL[x - 1][y] == 2): L.append((-1, 0))
+    if TBL[F[0]-1][F[1]] == 0:
+        L.append((-1, 0, Direction.GAUCHE))
+    if TBL[F[0]+1][F[1]] == 0:
+        L.append((1, 0, Direction.DROITE))
+    if TBL[F[0]][F[1]-1] == 0:
+        L.append((0, -1, Direction.HAUT))
+    if TBL[F[0]][F[1]+1] == 0:
+        L.append((0, 1, Direction.BAS))
+    return L
+
+
+def GhostsPossibleMove(F):
+    L = []
+    if F[3] == Direction.HAUT or F[3] == Direction.BAS:
+        if TBL[F[0]-1][F[1]] == 0 or TBL[F[0]+1][F[1]] == 0:
+            return CornerGetPossibility(F)
+    if F[3] == Direction.GAUCHE or F[3] == Direction.DROITE:
+        if TBL[F[0]][F[1]-1] == 0 or TBL[F[0]][F[1]+1] == 0:
+            return CornerGetPossibility(F)
+
+
+    if F[3] == Direction.HAUT:
+        L.append((0, -1, Direction.HAUT))
+    elif F[3] == Direction.BAS:
+        L.append((0, 1, Direction.BAS))
+    elif F[3] == Direction.DROITE:
+        L.append((1, 0, Direction.DROITE))
+    elif F[3] == Direction.GAUCHE:
+        L.append((-1, 0, Direction.GAUCHE))
     return L
 
 
@@ -376,10 +410,12 @@ def IAPacman():
 def IAGhosts():
     # deplacement Fantome
     for F in Ghosts:
-        L = GhostsPossibleMove(F[0], F[1])
+        L = GhostsPossibleMove(F)
         choix = random.randrange(len(L))
         F[0] += L[choix][0]
         F[1] += L[choix][1]
+        F[3] = L[choix][2]
+
 
 
 #  Boucle principale de votre jeu appelée toutes les 500ms
