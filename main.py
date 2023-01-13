@@ -62,6 +62,8 @@ def DistanceCarteInit():
     CarteDistanceGum = TBL.copy()
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
+            if GUM[x][y] == 0:
+                CarteDistanceGum[x][y] = -1
             if TBL[x][y] != 0:
                 CarteDistanceGum[x][y] = 99
             if GUM[x][y] == 1:
@@ -306,22 +308,23 @@ def PointsATraiterInit():
 def Carte():
     points = PointsATraiterInit()
     CarteDistanceGum = DistanceCarteInit()
+    for i in points:
+        CarteDistanceGum[i[0]][i[1]] = 0
     L = []
-    for k in range(10):
-        print(points)
+    for k in range(15):
         for i in points:
             x = i[0]
             y = i[1]
-            if CarteDistanceGum[x+1][y] == 0:
+            if CarteDistanceGum[x+1][y] == -1:
                 CarteDistanceGum[x+1][y] = CarteDistanceGum[x][y]+1
                 L.append((x+1,y))
-            if CarteDistanceGum[x-1][y] == 0:
+            if CarteDistanceGum[x-1][y] == -1:
                 CarteDistanceGum[x-1][y] = CarteDistanceGum[x][y]+1
                 L.append((x-1,y))
-            if CarteDistanceGum[x][y+1] == 0:
+            if CarteDistanceGum[x][y+1] == -1:
                 CarteDistanceGum[x][y+1] = CarteDistanceGum[x][y]+1
                 L.append((x,y+1))
-            if CarteDistanceGum[x][y-1] == 0:
+            if CarteDistanceGum[x][y-1] == -1:
                 CarteDistanceGum[x][y-1] = CarteDistanceGum[x][y]+1
                 L.append((x,y-1))
 
