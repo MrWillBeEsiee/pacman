@@ -35,7 +35,7 @@ TBL = CreateArray([
     [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
     [1, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1],
     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
-    [1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 1, 0, 1, 1, 2, 2, 1, 1, 0, 1, 1, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 0, 1],
     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
@@ -57,8 +57,12 @@ def PlacementsGUM():  # placements des pacgums
 
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
-            if (TBL[x][y] == 0):
+            if (TBL[x][y] == 0 ):
                 GUM[x][y] = 1
+    GUM[1][1] = 3
+    GUM[18][1] = 3
+    GUM[1][9] = 3
+    GUM[18][9] = 3
     return GUM
 GUM = PlacementsGUM()
 
@@ -69,11 +73,11 @@ def DistanceCarteInit():
     CarteDistanceGum = TBL.copy()
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
-            if GUM[x][y] == 0:
+            if GUM[x][y] == 0 or GUM[x][y] == 3:
                 CarteDistanceGum[x][y] = -1
             if TBL[x][y] != 0:
                 CarteDistanceGum[x][y] = 99
-            if GUM[x][y] == 1:
+            if GUM[x][y] == 1 or GUM[x][y] == 3:
                 CarteDistanceGum[x][y] = 1
     return CarteDistanceGum
 
@@ -98,7 +102,8 @@ def DistanceCarteFantomesInit():
             else:
                 CarteDistanceFantomes[x][y] = -1
     for i in Ghosts:
-        CarteDistanceFantomes[i[0]][i[1]] = 0
+        if i[0] != 9 and  i[1] != 5:
+            CarteDistanceFantomes[i[0]][i[1]] = 0
     return CarteDistanceFantomes
 
 CarteDistanceFantomes = DistanceCarteFantomesInit()
@@ -257,6 +262,15 @@ def Affiche(PacmanColor, message):
                 e = 5
                 canvas.create_oval(xx - e, yy - e, xx + e, yy + e, fill="orange")
 
+    # superpacgum
+    for x in range(LARGEUR):
+        for y in range(HAUTEUR):
+            if (GUM[x][y] == 3):
+                xx = To(x)
+                yy = To(y)
+                e = 9
+                canvas.create_oval(xx - e, yy - e, xx + e, yy + e, fill="orange")
+
     # extra info
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
@@ -325,7 +339,7 @@ def PointsATraiterInit():
     L = []
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
-            if GUM[x][y] == 1:
+            if GUM[x][y] == 1 or GUM[x][y] == 3:
                 L.append((x,y))
     return L
 
@@ -335,7 +349,7 @@ def Carte():
     for i in points:
         CarteDistanceGum[i[0]][i[1]] = 0
     L = []
-    for k in range(15):
+    for k in range(20):
         for i in points:
             x = i[0]
             y = i[1]
@@ -361,10 +375,11 @@ def CarteFantomes():
     CarteDistanceFantomes = DistanceCarteFantomesInit()
     points = []
     for i in Ghosts:
-        points.append((i[0], i[1]))
+        if i[0] != 9 and i[1] != 5:
+            points.append((i[0], i[1]))
 
     L = []
-    for k in range(15):
+    for k in range(20):
         for i in points:
             x = i[0]
             y = i[1]
@@ -387,33 +402,43 @@ def CarteFantomes():
 
 
 
-
+enrage = 0
 def PacManPossibleMove():
     L = []
     Dir = []
     x, y = PacManPos
-    if CarteDistanceFantomes[PacManPos[0]][PacManPos[1]] > 3:
+    global enrage
+    if enrage > 0:
+        if (TBL[x][y - 1] == 0): L.append((0, -1, CarteDistanceFantomes[x][y - 1]))
+        if (TBL[x][y + 1] == 0): L.append((0, 1, CarteDistanceFantomes[x][y + 1]))
+        if (TBL[x + 1][y] == 0): L.append((1, 0, CarteDistanceFantomes[x + 1][y]))
+        if (TBL[x - 1][y] == 0): L.append((-1, 0, CarteDistanceFantomes[x - 1][y]))
+
+        Dir.append(L[0])
+        L.pop(0)
+        for i in L:
+            if i[2] < Dir[0][2]:
+                Dir.clear()
+                Dir.append(i)
+            if i[2] == Dir[0][2]:
+                Dir.append(i)
+        enrage-=1
+
+    elif CarteDistanceFantomes[PacManPos[0]][PacManPos[1]] > 3:
         if (TBL[x][y - 1] == 0): L.append((0, -1, CarteDistanceGum[x][y-1]))
         if (TBL[x][y + 1] == 0): L.append((0, 1, CarteDistanceGum[x][y+1]))
         if (TBL[x + 1][y] == 0): L.append((1, 0, CarteDistanceGum[x+1][y]))
         if (TBL[x - 1][y] == 0): L.append((-1, 0, CarteDistanceGum[x-1][y]))
 
         Dir.append(L[0])
-        print((L))
-        print(Dir)
         del(L[0])
-        print ((L))
 
         for i in L:
             if i[2] < Dir[0][2]:
                 Dir.clear()
-                print(Dir)
                 Dir.append(i)
-                print("coucou")
             elif i[2] == Dir[0][2]:
                 Dir.append(i)
-        print(Dir)
-
 
     else:
         if (TBL[x][y - 1] == 0): L.append((0, -1, CarteDistanceFantomes[x][y - 1]))
@@ -435,7 +460,7 @@ def PacManPossibleMove():
 def IAPacman():
     global CarteDistanceGum
     CarteDistanceGum = Carte()
-    global PacManPos, Ghosts, score
+    global PacManPos, Ghosts, score, enrage
     # deplacement Pacman
     L = PacManPossibleMove()
     choix = random.randrange(len(L))
@@ -446,21 +471,25 @@ def IAPacman():
     if(GUM[PacManPos[0], PacManPos[1]] == 1):
         GUM[PacManPos[0], PacManPos[1]] = 0
         score += 100
+    if (GUM[PacManPos[0], PacManPos[1]] == 3):
+        GUM[PacManPos[0], PacManPos[1]] = 0
+        score += 2000
+        global enrage
+        enrage = 16
+
     for F in Ghosts:
-        if F[0] == PacManPos[0] and F[1] == PacManPos[1]:
+        if F[0] == PacManPos[0] and F[1] == PacManPos[1] and enrage > 0:
+            F[0] = 9
+            F[1] = 4
+        elif F[0] == PacManPos[0] and F[1] == PacManPos[1]:
             global LOOSE
             LOOSE = 1
-
-
 
 
     # juste pour montrer comment on se sert de la fonction SetInfo1
     for x in range(LARGEUR):
         for y in range(HAUTEUR):
             SetInfo1(x, y, CarteDistanceGum[x][y])
-
-
-
 
 
 
@@ -506,7 +535,10 @@ def IAGhosts():
         F[0] += L[choix][0]
         F[1] += L[choix][1]
         F[3] = L[choix][2]
-        if F[0] == PacManPos[0] and F[1] == PacManPos[1]:
+        if F[0] == PacManPos[0] and F[1] == PacManPos[1] and enrage > 0:
+            F[0] = 9
+            F[1] = 4
+        elif F[0] == PacManPos[0] and F[1] == PacManPos[1]:
             global LOOSE
             LOOSE = 1
     global CarteDistanceFantomes
@@ -525,16 +557,18 @@ iteration = 0
 def PlayOneTurn():
     global score
     global iteration
-
+    global enrage
+    color = "yellow"
     if not PAUSE_FLAG and not LOOSE:
         iteration += 1
         if iteration % 2 == 0:
+            if enrage > 0:
+                color = "white"
             IAPacman()
         else:
             IAGhosts()
 
-
-    Affiche(PacmanColor="yellow", message=f"score : {score}")
+    Affiche(PacmanColor=color, message=f"score : {score}")
 
 
 ###########################################:
